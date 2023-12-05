@@ -1,10 +1,12 @@
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, status
+from fastapi.websockets import WebSocket
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from validation.order import Order as OrderValidation
+from validation.order import Order as OrderValidation, Status
 from db.models.order import Order
 from db.utils.user import get_user_by_id
 from db.utils.pizza import get_pizza_by_id, create_pizza_order
+from utils.ws import manager
 
 
 async def create_order(order_data: OrderValidation, user_id: int, session: AsyncSession):
@@ -20,9 +22,25 @@ async def create_order(order_data: OrderValidation, user_id: int, session: Async
     return {'order_id': order.id}
 
 
+async def repeat_order(order_id: int, user_id: int, session: AsyncSession):
+    order = await get_order_by_id(order_id, user_id, session)
+    order.status = Status.PREPARING
+    await session.commit()
+    return status.HTTP_200_OK
+
+
 async def get_order_by_id(order_id: int, user_id: int, session: AsyncSession):
     if order := (await session.execute(select(Order).filter_by(id=order_id, user_id=user_id))).scalar_one_or_none():
         return order
     raise HTTPException(status_code=404, detail='There is no your order with such id')
+
+
+async def change_status_ws(ws: WebSocket, order_id: int, user_id: int, status: Status, session: AsyncSession):
+    order = await get_order_by_id(order_id, user_id, session)
+    order.status = status
+    await session.commit()
+    await manager.connect(user_id, ws)
+    await manager.send_text(user_id, status.value)
+    await manager.disconnect(user_id, ws)
 
 

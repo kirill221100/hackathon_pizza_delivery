@@ -9,5 +9,6 @@ pizza_router = APIRouter()
 
 
 @pizza_router.post('/custom-pizza')
-async def custom_pizza_path(pizza_data: CusrtomPizzaValidation, user=Depends(get_current_user), session: AsyncSession = Depends(get_session)):
+async def custom_pizza_path(pizza_data: CusrtomPizzaValidation, user=Depends(get_current_user),
+                            session: AsyncSession = Depends(get_session)):
     return await create_custom_pizza(pizza_data, user['id'], session)

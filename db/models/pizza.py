@@ -4,6 +4,7 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 from validation.pizza import Crust, Sauce, Toppings, Size
 from db.db_setup import Base
+from db.models.favorite_pizzas_table import favorite_pizzas_table
 
 class Pizza(Base):
     __tablename__ = 'pizzas'
@@ -18,6 +19,7 @@ class Pizza(Base):
     is_custom = Column(Boolean, default=False)
     user_id = Column(Integer, ForeignKey('users.id'))
     user = relationship('User', back_populates='custom_pizzas')
+    users_favorite = relationship('User', secondary=favorite_pizzas_table)
     pizza_orders = relationship('PizzaOrder', back_populates='pizza')
 
 

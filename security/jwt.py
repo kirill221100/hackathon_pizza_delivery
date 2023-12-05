@@ -25,6 +25,6 @@ def verify_token(token: str):
         user_data = jwt.decode(token, config.JWT_SECRET_KEY, algorithms=[config.ALGORITHM])
         if user_data:
             return user_data
-        raise HTTPException(status_code=400, detail='empty token')
+        raise HTTPException(status_code=400, detail='empty token', headers={"WWW-Authenticate": "Bearer"})
     except JWTError:
-        raise HTTPException(status_code=400, detail='invalid token')
+        raise HTTPException(status_code=400, detail='invalid token', headers={"WWW-Authenticate": "Bearer"})
