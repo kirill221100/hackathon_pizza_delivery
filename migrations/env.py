@@ -7,8 +7,9 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 
 from alembic import context
 
-from db.models.chat import Chat
-from db.models.message import Message, TextMessage, PhotoMessage, VideoMessage, VoiceMessage
+from db.models.order import Order
+from db.models.pizza import Pizza, PizzaOrder
+from db.models.user import User
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
