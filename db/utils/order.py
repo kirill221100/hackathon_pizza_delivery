@@ -43,6 +43,31 @@ async def get_order_by_id_selectin_pizzas(order_id: int, user_id: int, session: 
     raise HTTPException(status_code=404, detail='There is no your order with such id')
 
 
+async def get_all_user_orders(user_id: int, session: AsyncSession, page: int, per_page: int):
+    limit = per_page * page
+    offset = (page - 1) * per_page
+    return (await session.execute(select(Order).filter_by(user_id=user_id)
+                                  .options(selectinload(Order.pizzas)).limit(limit).offset(offset))).scalars().all()
+
+
+async def get_all_active_user_orders(user_id: int, session: AsyncSession, page: int, per_page: int):
+    limit = per_page * page
+    offset = (page - 1) * per_page
+    return (await session.execute(select(Order).filter(Order.user_id == user_id,
+                                                       Order.status not in (Status.CANCELLED, Status.DELIVERED))
+                                  .options(selectinload(Order.pizzas))
+                                  .limit(limit).offset(offset))).scalars().all()
+
+
+async def get_all_delivered_user_orders(user_id: int, session: AsyncSession, page: int, per_page: int):
+    limit = per_page * page
+    offset = (page - 1) * per_page
+    return (await session.execute(select(Order).filter(Order.user_id == user_id,
+                                                       Order.status == Status.DELIVERED)
+                                  .options(selectinload(Order.pizzas))
+                                  .limit(limit).offset(offset))).scalars().all()
+
+
 async def change_status_ws(ws: WebSocket, order_id: int, user_id: int, status: Status, session: AsyncSession):
     order = await get_order_by_id(order_id, user_id, session)
     order.status = status
