@@ -60,10 +60,12 @@ class CustomPizza(Pizza):
 class CustomPizzaResponse(CustomPizza):
     user_id: int
     price: float
+    is_custom: bool
 
 
 class PizzaResponse(Pizza):
     price: float
+    is_custom: bool
 
 
 class GetPizzasResponse(BaseModel):
