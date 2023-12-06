@@ -24,7 +24,7 @@ async def edit_favorite_ingredients_path(ingredients: FavoriteIngredients, user=
     return await edit_favorite_ingredients(ingredients, user['id'], session)
 
 
-@user_router.patch('/add-favorite-pizza', status_code=status.HTTP_200_OK)
+@user_router.patch('/add-favorite-pizza/{pizza_id}', status_code=status.HTTP_200_OK)
 async def add_favorite_pizza_path(pizza_id: int, user=Depends(get_current_user),
                                   session: AsyncSession = Depends(get_session)):
     return await add_favorite_pizza(pizza_id, user['id'], session)
