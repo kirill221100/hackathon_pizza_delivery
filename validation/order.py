@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import List
-from validation.pizza import PizzaOrder
+from validation.pizza import PizzaOrder, PizzaOrderResponse
 import enum
 from datetime import datetime
 
@@ -20,6 +20,7 @@ class Order(BaseModel):
 
 class OrderResponse(Order):
     user_id: int
+    pizzas: List[PizzaOrderResponse]
     price: int
     date: datetime
     status: Status
