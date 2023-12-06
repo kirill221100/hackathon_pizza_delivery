@@ -5,6 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from validation.order import Order as OrderValidation, Status
 from db.models.order import Order
+from db.models.pizza import PizzaOrder
 from db.utils.user import get_user_by_id
 from db.utils.pizza import get_pizza_by_id, create_pizza_order
 from utils.ws import manager
@@ -47,7 +48,8 @@ async def get_all_user_orders(user_id: int, session: AsyncSession, page: int, pe
     limit = per_page * page
     offset = (page - 1) * per_page
     return (await session.execute(select(Order).filter_by(user_id=user_id)
-                                  .options(selectinload(Order.pizzas)).limit(limit).offset(offset))).scalars().all()
+                                  .options(selectinload(Order.pizzas).selectinload(PizzaOrder.pizza))
+                                  .limit(limit).offset(offset))).scalars().all()
 
 
 async def get_all_active_user_orders(user_id: int, session: AsyncSession, page: int, per_page: int):

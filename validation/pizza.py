@@ -75,6 +75,7 @@ class GetPizzasResponse(BaseModel):
 
 
 class PizzaOrder(BaseModel):
-    pizza_id: int
+    pizza: PizzaResponse
+    # pizza_id: int
     amount: int
 
