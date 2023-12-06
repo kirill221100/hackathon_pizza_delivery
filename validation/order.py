@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from typing import List
 from validation.pizza import PizzaOrder
 import enum
+from datetime import datetime
 
 
 class Status(enum.Enum):
@@ -20,4 +21,5 @@ class Order(BaseModel):
 class OrderResponse(Order):
     user_id: int
     price: int
+    date: datetime
     status: Status

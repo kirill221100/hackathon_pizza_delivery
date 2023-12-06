@@ -55,3 +55,30 @@ async def get_user_by_id(user_id: int, session: AsyncSession):
 async def get_user_by_id_selectin_favorite_pizzas(user_id: int, session: AsyncSession):
     return (await session.execute(select(User).filter_by(id=user_id).options(selectinload(User.favorite_pizzas))))\
         .scalar_one_or_none()
+
+
+async def get_user_by_id_selectin_custom_pizzas(user_id: int, session: AsyncSession):
+    # limit = per_page * page
+    # offset = (page - 1) * per_page
+    return (await session.execute(select(User).filter_by(id=user_id).options(selectinload(User.custom_pizzas))))\
+        .scalar_one_or_none()
+
+
+async def get_favorite_pizzas(user_id: int, session: AsyncSession):
+    # limit = per_page * page
+    # offset = (page - 1) * per_page
+    user = await get_user_by_id_selectin_favorite_pizzas(user_id, session)
+    return user.favorite_pizzas
+
+
+async def get_custom_pizzas(user_id: int, session: AsyncSession):
+    # limit = per_page * page
+    # offset = (page - 1) * per_page
+    user = await get_user_by_id_selectin_custom_pizzas(user_id, session)
+    return user.custom_pizzas
+
+
+async def get_favorite_ingredients(user_id: int, session: AsyncSession):
+    user = await get_user_by_id(user_id, session)
+    return {'crusts': user.favorite_crusts, 'sauces': user.favorite_sauces, 'toppings': user.favorite_toppings}
+

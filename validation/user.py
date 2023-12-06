@@ -9,6 +9,11 @@ class FavoriteIngredients(BaseModel):
     toppings: Optional[List[Toppings]]
 
 
+class FavoriteIngredientsResponse(FavoriteIngredients):
+    pass
+
+
+
 class UserResponse(BaseModel):
     id: int
     username: str

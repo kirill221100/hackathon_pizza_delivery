@@ -54,5 +54,19 @@ async def get_pizzas(session: AsyncSession, page: int, per_page: int):
     return (await session.execute(select(Pizza).limit(limit).offset(offset))).scalars().all()
 
 
+# async def get_custom_pizzas(user_id: int, session: AsyncSession, page: int, per_page: int):
+#     limit = per_page * page
+#     offset = (page - 1) * per_page
+#     return (await session.execute(select(Pizza).filter_by(user_id=user_id).limit(limit).offset(offset))).scalars().all()
+#
+#
+# async def get_favorite_pizzas(user_id: int, session: AsyncSession, page: int, per_page: int):
+#     limit = per_page * page
+#     offset = (page - 1) * per_page
+#     user = await get_user_by_id(user_id, session)
+#     return (await session.execute(select(Pizza).filter(Pizza.users_favorite.any_(user)).limit(limit).offset(offset)))\
+#         .scalars().all()
+
+
 async def get_pizza_by_id(pizza_id: int, session: AsyncSession):
     return (await session.execute(select(Pizza).filter_by(id=pizza_id))).scalar_one_or_none()

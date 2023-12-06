@@ -58,12 +58,14 @@ class CustomPizza(Pizza):
 
 
 class CustomPizzaResponse(CustomPizza):
+    id: int
     user_id: int
     price: float
     is_custom: bool
 
 
 class PizzaResponse(Pizza):
+    id: int
     price: float
     is_custom: bool
 
