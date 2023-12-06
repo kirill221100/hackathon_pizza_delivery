@@ -44,13 +44,30 @@ class Prices(enum.Enum):
     LARGE_SIZE = 1.6
 
 
-class CustomPizza(BaseModel):
+class Pizza(BaseModel):
     title: str
     crust: Crust
     sauce: Sauce
     toppings: List[Toppings]
     size: Size
+    picture: str
+
+
+class CustomPizza(Pizza):
     picture: Optional[str]
+
+
+class CustomPizzaResponse(CustomPizza):
+    user_id: int
+    price: float
+
+
+class PizzaResponse(Pizza):
+    price: float
+
+
+class GetPizzasResponse(BaseModel):
+    pizzas: List[PizzaResponse]
 
 
 class PizzaOrder(BaseModel):

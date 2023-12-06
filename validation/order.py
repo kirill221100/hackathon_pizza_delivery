@@ -13,6 +13,11 @@ class Status(enum.Enum):
 
 
 class Order(BaseModel):
-    pizza_orders: List[PizzaOrder]
+    pizzas: List[PizzaOrder]
     address: str
 
+
+class OrderResponse(Order):
+    user_id: int
+    price: int
+    status: Status

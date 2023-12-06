@@ -7,3 +7,10 @@ class FavoriteIngredients(BaseModel):
     crusts: Optional[List[Crust]]
     sauces: Optional[List[Sauce]]
     toppings: Optional[List[Toppings]]
+
+
+class UserResponse(BaseModel):
+    id: int
+    username: str
+    address: str
+

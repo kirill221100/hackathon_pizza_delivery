@@ -48,5 +48,11 @@ async def delete_from_favorite_pizza(pizza_id: int, user_id: int, session: Async
     return status.HTTP_200_OK
 
 
+async def get_pizzas(session: AsyncSession, page: int, per_page: int):
+    limit = per_page * page
+    offset = (page - 1) * per_page
+    return (await session.execute(select(Pizza).limit(limit).offset(offset))).scalars().all()
+
+
 async def get_pizza_by_id(pizza_id: int, session: AsyncSession):
     return (await session.execute(select(Pizza).filter_by(id=pizza_id))).scalar_one_or_none()
