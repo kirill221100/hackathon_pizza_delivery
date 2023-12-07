@@ -8,7 +8,7 @@ from db.db_setup import Base
 class Order(Base):
     __tablename__ = 'orders'
     id = Column(Integer, primary_key=True)
-    date = Column(DateTime, default=datetime.now())
+    date = Column(DateTime, default=datetime.now)
     address = Column(String)
     pizzas = relationship('PizzaOrder', back_populates='order')
     status = Column(Enum(Status), default=Status.PREPARING)
