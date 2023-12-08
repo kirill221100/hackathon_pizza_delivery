@@ -2,7 +2,7 @@ from datetime import datetime
 from fastapi import Depends, HTTPException, status
 from fastapi.websockets import WebSocket, WebSocketDisconnect
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, desc
 from sqlalchemy.orm import selectinload
 from validation.order import Order as OrderValidation, Status
 from db.models.order import Order
@@ -56,7 +56,7 @@ async def get_all_user_orders(user_id: int, session: AsyncSession, page: int, pe
     limit = per_page * page
     offset = (page - 1) * per_page
     return (await session.execute(select(Order).filter_by(user_id=user_id)
-                                  .options(selectinload(Order.pizzas).selectinload(PizzaOrder.pizza))
+                                  .options(selectinload(Order.pizzas).selectinload(PizzaOrder.pizza)).order_by(Order.date.desc())
                                   .limit(limit).offset(offset))).scalars().all()
 
 
@@ -65,7 +65,7 @@ async def get_all_active_user_orders(user_id: int, session: AsyncSession, page: 
     offset = (page - 1) * per_page
     return (await session.execute(select(Order).filter(Order.user_id == user_id,
                                                        Order.status not in (Status.CANCELLED, Status.DELIVERED))
-                                  .options(selectinload(Order.pizzas))
+                                  .options(selectinload(Order.pizzas).selectinload(PizzaOrder.pizza)).order_by(Order.date.desc())
                                   .limit(limit).offset(offset))).scalars().all()
 
 
@@ -74,7 +74,7 @@ async def get_all_delivered_user_orders(user_id: int, session: AsyncSession, pag
     offset = (page - 1) * per_page
     return (await session.execute(select(Order).filter(Order.user_id == user_id,
                                                        Order.status == Status.DELIVERED)
-                                  .options(selectinload(Order.pizzas))
+                                  .options(selectinload(Order.pizzas).selectinload(PizzaOrder.pizza)).order_by(Order.date.desc())
                                   .limit(limit).offset(offset))).scalars().all()
 
 
