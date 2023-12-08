@@ -21,7 +21,6 @@ class ConnectionManager:
 
     async def disconnect(self, order_id: int, ws: WebSocket, close_code: int = status.WS_1000_NORMAL_CLOSURE):
         self.__connections[order_id].remove(ws)
-        await ws.close(code=close_code)
 
 
 manager = ConnectionManager()
