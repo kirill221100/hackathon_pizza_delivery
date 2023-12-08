@@ -19,6 +19,7 @@ class Order(BaseModel):
 
 
 class OrderResponse(Order):
+    id: int
     user_id: int
     pizzas: List[PizzaOrderResponse]
     price: int

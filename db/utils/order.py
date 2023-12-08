@@ -1,5 +1,5 @@
 from fastapi import Depends, HTTPException, status
-from fastapi.websockets import WebSocket
+from fastapi.websockets import WebSocket, WebSocketDisconnect
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -37,6 +37,12 @@ async def get_order_by_id(order_id: int, user_id: int, session: AsyncSession):
     raise HTTPException(status_code=404, detail='There is no your order with such id')
 
 
+async def get_order_by_id_no_user_id(order_id: int, session: AsyncSession):
+    if order := (await session.execute(select(Order).filter_by(id=order_id))).scalar_one_or_none():
+        return order
+    raise HTTPException(status_code=404, detail='There is no order with such id')
+
+
 async def get_order_by_id_selectin_pizzas(order_id: int, user_id: int, session: AsyncSession):
     if order := (await session.execute(select(Order).filter_by(id=order_id, user_id=user_id)
                                                .options(selectinload(Order.pizzas)))).scalar_one_or_none():
@@ -70,10 +76,21 @@ async def get_all_delivered_user_orders(user_id: int, session: AsyncSession, pag
                                   .limit(limit).offset(offset))).scalars().all()
 
 
-async def change_status_ws(ws: WebSocket, order_id: int, user_id: int, status: Status, session: AsyncSession):
-    order = await get_order_by_id(order_id, user_id, session)
+async def change_status_ws(ws: WebSocket, order_id: int, status: Status, session: AsyncSession):
+    order = await get_order_by_id_no_user_id(order_id, session)
     order.status = status
     await session.commit()
-    await manager.connect(user_id, ws)
-    await manager.send_text(user_id, status.value)
-    await manager.disconnect(user_id, ws)
+    await manager.connect(order_id, ws)
+    await manager.send_text(order_id, status.value)
+    await manager.disconnect(order_id, ws)
+
+
+async def order_status_ws(ws: WebSocket, order_id: int, session: AsyncSession):
+    order = await get_order_by_id_no_user_id(order_id, session)
+    await manager.connect(order_id, ws)
+    try:
+        while True:
+            text = await ws.receive_text()
+            await manager.send_text(order, text)
+    except WebSocketDisconnect:
+        await manager.disconnect(order_id, ws)

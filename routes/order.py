@@ -6,7 +6,7 @@ from validation.order import Order as OrderValidation, Status, OrderResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from db.db_setup import get_session
 from db.utils.order import create_order, get_order_by_id_selectin_pizzas, repeat_order, change_status_ws, \
-    get_all_user_orders, get_all_active_user_orders, get_all_delivered_user_orders
+    get_all_user_orders, get_all_active_user_orders, get_all_delivered_user_orders, order_status_ws
 
 order_router = APIRouter()
 
@@ -49,7 +49,12 @@ async def get_all_delivered_user_orders_path(user=Depends(get_current_user),
     return await get_all_delivered_user_orders(user['id'], session, page, per_page)
 
 
-@order_router.websocket('/change-status/{order_id}/{status}/{user_id}')
-async def change_status_ws_path(ws: WebSocket, order_id: int, status: Status, user_id: int,
+@order_router.websocket('/change-status/{order_id}/{status}')
+async def change_status_ws_path(ws: WebSocket, order_id: int, status: Status,
                                 session: AsyncSession = Depends(get_session)):
-    await change_status_ws(ws, order_id, user_id, status, session)
+    await change_status_ws(ws, order_id, status, session)
+
+
+@order_router.websocket('/order-status-ws/{order_id}')
+async def order_status_ws_path(ws: WebSocket, order_id: int, session: AsyncSession = Depends(get_session)):
+    await order_status_ws(ws, order_id, session)
