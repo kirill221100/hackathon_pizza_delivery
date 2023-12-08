@@ -45,7 +45,7 @@ async def get_order_by_id_no_user_id(order_id: int, session: AsyncSession):
 
 async def get_order_by_id_selectin_pizzas(order_id: int, user_id: int, session: AsyncSession):
     if order := (await session.execute(select(Order).filter_by(id=order_id, user_id=user_id)
-                                               .options(selectinload(Order.pizzas)))).scalar_one_or_none():
+                                               .options(selectinload(Order.pizzas).selectinload(PizzaOrder.pizza)))).scalar_one_or_none():
         return order
     raise HTTPException(status_code=404, detail='There is no your order with such id')
 
