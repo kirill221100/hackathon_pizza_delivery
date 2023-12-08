@@ -1,3 +1,4 @@
+from datetime import datetime
 from fastapi import Depends, HTTPException, status
 from fastapi.websockets import WebSocket, WebSocketDisconnect
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -27,6 +28,7 @@ async def create_order(order_data: OrderValidation, user_id: int, session: Async
 async def repeat_order(order_id: int, user_id: int, session: AsyncSession):
     order = await get_order_by_id_selectin_pizzas(order_id, user_id, session)
     order.status = Status.PREPARING
+    order.date = datetime.now()
     await session.commit()
     return order
 
