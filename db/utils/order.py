@@ -1,15 +1,17 @@
 from datetime import datetime
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status as status_response
 from fastapi.websockets import WebSocket, WebSocketDisconnect
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
 from sqlalchemy.orm import selectinload
-from validation.order import Order as OrderValidation, Status
+from validation.order import Order as OrderValidation, Status, OrderResponse
+from validation.pizza import PizzaOrderResponse
 from db.models.order import Order
 from db.models.pizza import PizzaOrder
 from db.utils.user import get_user_by_id
 from db.utils.pizza import get_pizza_by_id, create_pizza_order
-from utils.ws import manager
+from utils.ws import users_orders_manager
 
 
 async def create_order(order_data: OrderValidation, user_id: int, session: AsyncSession):
@@ -22,6 +24,17 @@ async def create_order(order_data: OrderValidation, user_id: int, session: Async
         order.price += pizza_order_db.pizza.price * pizza_order_db.amount
     session.add(order)
     await session.commit()
+    await session.flush()
+    pizzas_json = [PizzaOrderResponse.model_validate(i, from_attributes=True) for i in order.pizzas]
+    order_json = {'id': order.id,
+                  'user_id': user_id,
+                  'pizzas': pizzas_json,
+                  'price': order.price,
+                  'date': order.date,
+                  'status': order.status,
+                  'address': order.address}
+    await users_orders_manager.send_data(user_id, {'type': 'new_order',
+                                                   'order': jsonable_encoder(OrderResponse.model_validate(order_json))})
     return order
 
 
@@ -78,21 +91,19 @@ async def get_all_delivered_user_orders(user_id: int, session: AsyncSession, pag
                                   .limit(limit).offset(offset))).scalars().all()
 
 
-async def change_status_ws(ws: WebSocket, order_id: int, status: Status, session: AsyncSession):
+async def change_order_status_ws(user_id: int, order_id: int, status: Status, session: AsyncSession):
     order = await get_order_by_id_no_user_id(order_id, session)
     order.status = status
     await session.commit()
-    await manager.connect(order_id, ws)
-    await manager.send_text(order_id, status.value)
-    await manager.disconnect(order_id, ws)
+    await users_orders_manager.send_data(user_id, {'type': 'change_status', 'status': status.value, 'order_id': order_id})
+    return status_response.HTTP_200_OK
 
 
-async def order_status_ws(ws: WebSocket, order_id: int, session: AsyncSession):
-    order = await get_order_by_id_no_user_id(order_id, session)
-    await manager.connect(order_id, ws)
+async def users_orders_ws(ws: WebSocket, user_id: int):
+    await users_orders_manager.connect(user_id, ws)
     try:
         while True:
-            text = await ws.receive_text()
-            await manager.send_text(order, text)
+            data = await ws.receive_text()
+            await users_orders_manager.send_data(user_id, data)
     except WebSocketDisconnect:
-        await manager.disconnect(order_id, ws)
+        await users_orders_manager.disconnect(user_id, ws)

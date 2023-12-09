@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import List
 from validation.pizza import PizzaOrder, PizzaOrderResponse
 import enum
@@ -19,6 +19,7 @@ class Order(BaseModel):
 
 
 class OrderResponse(Order):
+    model_config = ConfigDict(from_attributes=True)
     id: int
     user_id: int
     pizzas: List[PizzaOrderResponse]
