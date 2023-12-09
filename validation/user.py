@@ -13,9 +13,8 @@ class FavoriteIngredientsResponse(FavoriteIngredients):
     pass
 
 
-
 class UserResponse(BaseModel):
     id: int
     username: str
-    address: str
+    address: Optional[str]
 
