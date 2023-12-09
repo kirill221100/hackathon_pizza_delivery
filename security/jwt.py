@@ -1,7 +1,7 @@
 from security.config import get_config
 from jose import jwt, JWTError
 from datetime import datetime, timedelta
-from fastapi import HTTPException
+from fastapi import HTTPException, WebSocketException, status
 
 config = get_config()
 
@@ -28,3 +28,13 @@ def verify_token(token: str):
         raise HTTPException(status_code=401, detail='empty token', headers={"WWW-Authenticate": "Bearer"})
     except JWTError:
         raise HTTPException(status_code=401, detail='invalid token', headers={"WWW-Authenticate": "Bearer"})
+
+
+def verify_token_ws(token: str):
+    try:
+        user_data = jwt.decode(token, config.JWT_SECRET_KEY, algorithms=[config.ALGORITHM])
+        if user_data:
+            return user_data
+        raise WebSocketException(status.HTTP_403_FORBIDDEN)
+    except JWTError:
+        raise WebSocketException(status.HTTP_403_FORBIDDEN)

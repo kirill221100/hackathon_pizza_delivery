@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, Header
 from fastapi.websockets import WebSocket
 from typing import List
-from security.oauth import get_current_user
+from security.oauth import get_current_user, get_current_user_ws
 from validation.order import Order as OrderValidation, Status, OrderResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from db.db_setup import get_session
@@ -54,6 +54,7 @@ async def change_order_status_ws_path(user_id: int, order_id: int, status: Statu
     return await change_order_status_ws(user_id, order_id, status, session)
 
 
-@order_router.websocket('/users-orders-ws/{user_id}')
-async def users_orders_ws_path(ws: WebSocket, user_id: int):
-    await users_orders_ws(ws, user_id)
+@order_router.websocket('/users-orders-ws')
+async def users_orders_ws_path(ws: WebSocket, user_token: str):
+    user = await get_current_user_ws(user_token)
+    await users_orders_ws(ws, user['id'])
