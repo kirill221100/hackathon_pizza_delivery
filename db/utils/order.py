@@ -101,7 +101,6 @@ async def change_order_status_ws(user_id: int, order_id: int, status: Status, se
 
 async def users_orders_ws(ws: WebSocket, user_id: int):
     await users_orders_manager.connect(user_id, ws)
-    print(1)
     try:
         while True:
             data = await ws.receive_json()

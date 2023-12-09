@@ -14,7 +14,10 @@ class UsersOrdersManager:
         await ws.accept()
 
     async def send_data(self, user_id: int, data: dict):
-        [await ws.send_json(data) for ws in self.__connections[user_id]]
+        try:
+            [await ws.send_json(data) for ws in self.__connections[user_id]]
+        except KeyError:
+            pass
 
     async def disconnect(self, user_id: int, ws: WebSocket):
         self.__connections[user_id].remove(ws)
